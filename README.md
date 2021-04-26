@@ -22,3 +22,16 @@
 ![example](https://github.com/Mas0nShi/jsc-Decryption/blob/master/jsc-Decompile_example.png)
 
 If you have any questions, please contact [ MasonShi@88.com ]
+
+# jsc-Encryption
+ 
+### Usage :
+        python main.py [-e] [xxteaKey] [outDir]
+### Example :
+        python main.py -e 6362d9fe-c3ad-47 C:\DecJsc-master\out
+### Tips :
+        -e [encrypt]
+### Outputs :
+        The output folder is located in the same directory as the out folder; it is named "enc".
+
+---By Abslb

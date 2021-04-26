@@ -5,6 +5,9 @@
 # @Software: PyCharm
 # @Blog    ：https://blog.shi1011.cn
 
+# The encryption attempt by Abslb
+# Github   : https://github.com/CgAu3
+
 import xxtea
 import zlib
 import os
@@ -111,6 +114,8 @@ def save_file(fileDir, outData):
             raise Exception("Error: create directory %s failed." % rootPath)
     if fileDir.endswith("c"):
         file = fileDir[:-1]
+    elif fileDir.endswith("js"):
+        file = fileDir+"c"
 
     if isinstance(outData, str):  # 判断数据类型 以防utf8转码失败的文件无法保存
         with open(file, "w", encoding="utf-8") as fd:
@@ -127,7 +132,7 @@ def decrypt(filePath, key):
 
     :param filePath: 文件目录
     :param key: xxteaKey
-    :return: None
+    :return: 解密数据
     """
     if len(key) < 16:
         key += "".join("\0" * (16 - len(key)))  # key填充
@@ -144,9 +149,7 @@ def decrypt(filePath, key):
             dec_data = bytes(dec_data).decode("utf-8")
         except UnicodeDecodeError:
             ColorPrinter.print_blue_text("    This file looks like have some unknown byte, try save as unknown files")
-
     return dec_data
-
 
 def batch_decrypt(srcDir, xxtea_key):
     """
@@ -174,6 +177,66 @@ def batch_decrypt(srcDir, xxtea_key):
         print("        Save flie:{0}".format(outFile))
 
 
+def read_txt(fileDir):
+    rootPath = os.path.split(fileDir)[0]
+    with open(fileDir, "r", encoding="utf-8") as fd:
+        inData=fd.read()
+    fd.close()
+    return inData
+
+def encrypt(filePath, key):
+    """
+    :单文件加密
+    :param filePath: 文件目录
+    :param key: xxteaKey
+    :return: 加密数据
+    """
+    if len(key) < 16:
+        key += "".join("\0" * (16 - len(key)))  # key填充
+    data = read_txt(fileDir=filePath).encode("utf-8")
+    enc_data = xxtea.encrypt(data=data, key=key)
+    """
+    #下面是decrypt程序的解压缩部分 对应的压缩部分暂时未实现
+    if dec_data[:2] == b"PK":
+        fio = BytesIO(dec_data)
+        fzip = zipfile.ZipFile(file=fio)
+        dec_data = fzip.read(fzip.namelist()[0]).decode("utf-8")
+    elif dec_data[:2] == b"\x1f\x8b":
+        dec_data = bytes(zlib.decompress(dec_data, 16 + zlib.MAX_WBITS)).decode("utf-8")
+    else:
+        try:
+            dec_data = bytes(dec_data).decode("utf-8")
+        except UnicodeDecodeError:
+            ColorPrinter.print_blue_text("    This file looks like have some unknown byte, try save as unknown files")
+    """
+    return enc_data
+
+def batch_encrypt(srcDir, xxtea_key):
+    """
+    批量加密
+
+    :param srcDir: 文件夹目录
+    :param xxtea_key: xxteaKey
+    :return: None
+    """
+    if not os.path.exists(srcDir):
+        ColorPrinter.print_white_text("Error:FileNotFound")
+        exit(1)
+    rootDir = os.path.split(srcDir)[0]
+    outDir = rootDir
+    if outDir[-2:-1] != "\\":
+        outDir += "\\"
+    outDir += "enc\\"
+    traveDir.deep_iterate_dir(srcDir, [".js"])
+    files_list = traveDir.getfileslist()
+    for file_path in files_list:
+        ColorPrinter.print_green_text("Encrypting file:{0}".format(file_path))
+        encData = encrypt(filePath=file_path, key=xxtea_key)
+        outFile = outDir + file_path[len(rootDir + os.path.split(srcDir)[1]) + 1:]
+        save_file(fileDir=outFile, outData=encData)
+        print("        Save flie:{0}".format(outFile))
+
+
 def main():
     ColorPrint = ColorPrinter()
     # print(sys.argv)
@@ -186,6 +249,11 @@ def main():
         ColorPrint.print_white_text("Tips : ")
         print("        -d or -decrypt [decrypt]")
         print("        If you have any questions, please contact [ MasonShi@88.com ]\n")
+        print("\nThere is also an attempt of encrypt for Coco2d-js .jsc.")
+        ColorPrint.print_white_text("Usage : ")
+        print("        python {0} [-e] [xxteaKey] [decryptOutDir]".format(sys.argv[0]))
+        ColorPrint.print_white_text("Example : ")
+        print(r"        python {0} -e 6362d9fe-c3ad-47 C:\DecJsc-master\out".format(sys.argv[0]))
         exit(1)
     instruct = sys.argv[1]
     xxtea_key = sys.argv[2]
@@ -194,6 +262,10 @@ def main():
         show_banner()
         batch_decrypt(srcDir=srcDir, xxtea_key=xxtea_key)
         ColorPrint.print_white_text("Running exit...\n")
+    if instruct[1:2] == "e":
+        print("An encryption attempt by Abslb the AoS ROMHacker.\n")
+        batch_encrypt(srcDir=srcDir, xxtea_key=xxtea_key)
+        print("END...\n")
 
 
 if __name__ == "__main__":
