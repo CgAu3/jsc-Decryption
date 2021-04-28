@@ -15,6 +15,7 @@ import traveDir
 import sys
 import random
 import zipfile
+import gzip
 from io import BytesIO
 
 try:
@@ -194,6 +195,7 @@ def encrypt(filePath, key):
     if len(key) < 16:
         key += "".join("\0" * (16 - len(key)))  # key填充
     data = read_txt(fileDir=filePath).encode("utf-8")
+    data = gzip.compress(data)
     enc_data = xxtea.encrypt(data=data, key=key)
     """
     #下面是decrypt程序的解压缩部分 对应的压缩部分暂时未实现
